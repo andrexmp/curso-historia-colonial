@@ -135,18 +135,21 @@
         .columna-arrastrables, .columna-destinos { flex: 1; min-width: 250px; }
         .arrastrable {
             padding: 10px; background-color: #e3f2fd; border: 1px solid var(--color-secundario);
-            margin-bottom: 10px; border-radius: 5px; cursor: grab;
+            margin-bottom: 10px; border-radius: 5px; cursor: grab; user-select: none; touch-action: none;
         }
-        .arrastrable.arrastrando { opacity: 0.5; }
+        .arrastrable.arrastrando {
+             opacity: 0.8; position: absolute; z-index: 3000; pointer-events: none;
+        }
         .zona-destino {
             padding: 10px; background-color: #fafafa; border: 2px dashed #ccc;
             margin-bottom: 10px; border-radius: 5px; min-height: 50px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, border-color 0.2s;
         }
         .zona-destino.sobre { border-color: var(--color-acento); background-color: #fffde7; }
         .zona-destino.correcta { border-color: var(--color-correcto); background-color: #e8f5e9; }
         .zona-destino.incorrecta { border-color: var(--color-incorrecto); background-color: #ffebee; }
         .zona-destino p { font-style: italic; color: #757575; }
+        .zona-destino .arrastrable { cursor: default; }
 
         .modal {
             display: none; position: fixed; z-index: 2000; left: 0; top: 0;
@@ -385,7 +388,7 @@
                 });
             }
             
-            iniciarDragDrop();
+            iniciarDragDropUniversal();
         }
 
         function calificarQuiz(form) {
@@ -422,41 +425,87 @@
             modalResultados.style.display = 'block';
         }
         
-        function iniciarDragDrop() {
-            const arrastrables = document.querySelectorAll('.arrastrable');
-            const destinos = document.querySelectorAll('.zona-destino');
+        function iniciarDragDropUniversal() {
+            let elementoArrastrado = null;
+            let offsetX, offsetY;
 
-            arrastrables.forEach(arrastrable => {
-                arrastrable.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', e.target.id);
-                    setTimeout(() => e.target.classList.add('arrastrando'), 0);
-                });
-                arrastrable.addEventListener('dragend', e => e.target.classList.remove('arrastrando'));
-            });
+            function iniciarArrastre(e) {
+                if (e.target.classList.contains('arrastrable')) {
+                    elementoArrastrado = e.target;
+                    elementoArrastrado.classList.add('arrastrando');
+                    
+                    const rect = elementoArrastrado.getBoundingClientRect();
+                    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
 
-            destinos.forEach(zona => {
-                zona.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    zona.classList.add('sobre');
-                });
-                zona.addEventListener('dragleave', () => zona.classList.remove('sobre'));
-                zona.addEventListener('drop', e => {
-                    e.preventDefault();
-                    zona.classList.remove('sobre');
-                    const id = e.dataTransfer.getData('text');
-                    const arrastrable = document.getElementById(id);
-                    if (zona.dataset.acepta === id) {
-                        zona.innerHTML = '';
-                        zona.appendChild(arrastrable);
-                        zona.classList.add('correcta');
-                        arrastrable.setAttribute('draggable', 'false');
-                        arrastrable.style.cursor = 'default';
-                    } else {
-                        zona.classList.add('incorrecta');
-                        setTimeout(() => zona.classList.remove('incorrecta'), 500);
+                    offsetX = clientX - rect.left;
+                    offsetY = clientY - rect.top;
+
+                    elementoArrastrado.style.left = `${clientX - offsetX}px`;
+                    elementoArrastrado.style.top = `${clientY - offsetY}px`;
+
+                    document.addEventListener('mousemove', moverElemento);
+                    document.addEventListener('touchmove', moverElemento, { passive: false });
+                    document.addEventListener('mouseup', soltarElemento);
+                    document.addEventListener('touchend', soltarElemento);
+                }
+            }
+
+            function moverElemento(e) {
+                if (!elementoArrastrado) return;
+                e.preventDefault();
+                
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                elementoArrastrado.style.left = `${clientX - offsetX}px`;
+                elementoArrastrado.style.top = `${clientY - offsetY}px`;
+
+                document.querySelectorAll('.zona-destino').forEach(z => z.classList.remove('sobre'));
+                const elementoBajo = document.elementFromPoint(clientX, clientY);
+                if (elementoBajo) {
+                    const zona = elementoBajo.closest('.zona-destino');
+                    if (zona) zona.classList.add('sobre');
+                }
+            }
+
+            function soltarElemento(e) {
+                if (!elementoArrastrado) return;
+                
+                const clientX = e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchend' ? e.changedTouches[0].clientY : e.clientY;
+
+                const elementoBajo = document.elementFromPoint(clientX, clientY);
+                let zonaDestino = null;
+                if(elementoBajo) zonaDestino = elementoBajo.closest('.zona-destino');
+
+                if (zonaDestino && zonaDestino.dataset.acepta === elementoArrastrado.id) {
+                    zonaDestino.innerHTML = '';
+                    zonaDestino.appendChild(elementoArrastrado);
+                    zonaDestino.classList.add('correcta');
+                    elementoArrastrado.style.position = 'static';
+                } else {
+                    if(zonaDestino) {
+                        zonaDestino.classList.add('incorrecta');
+                        setTimeout(() => zonaDestino.classList.remove('incorrecta'), 500);
                     }
-                });
-            });
+                    // Devolver al origen (simplificado)
+                    const columnaOrigen = document.querySelector('.columna-arrastrables');
+                    columnaOrigen.appendChild(elementoArrastrado);
+                    elementoArrastrado.style.position = 'static';
+                }
+
+                elementoArrastrado.classList.remove('arrastrando');
+                elementoArrastrado = null;
+                document.querySelectorAll('.zona-destino').forEach(z => z.classList.remove('sobre'));
+                document.removeEventListener('mousemove', moverElemento);
+                document.removeEventListener('touchmove', moverElemento);
+                document.removeEventListener('mouseup', soltarElemento);
+                document.removeEventListener('touchend', soltarElemento);
+            }
+
+            vistaModulo.addEventListener('mousedown', iniciarArrastre);
+            vistaModulo.addEventListener('touchstart', iniciarArrastre);
         }
 
         btnIniciar.addEventListener('click', mostrarSelector);
