@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Interactivo: Sociedad Colonial en América y Chile</title>
+    <style>
+        :root {
+            --color-primario: #0d47a1; /* Azul oscuro */
+            --color-secundario: #1976d2; /* Azul medio */
+            --color-acento: #ffc107; /* Ámbar */
+            --color-fondo: #f4f6f8;
+            --color-texto: #212121;
+            --color-texto-claro: #ffffff;
+            --color-correcto: #4caf50;
+            --color-incorrecto: #f44336;
+            --sombra-caja: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            line-height: 1.6;
+        }
+
+        .contenedor {
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .barra-progreso-fija {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background-color: #e0e0e0; z-index: 1000;
+        }
+        #barra-progreso {
+            height: 10px; width: 0%; background-color: var(--color-acento);
+            transition: width 0.5s ease-in-out;
+        }
+        #progreso-texto {
+            position: absolute; top: 12px; left: 50%;
+            transform: translateX(-50%); font-size: 12px;
+            font-weight: bold; color: var(--color-primario);
+        }
+
+        #portada {
+            text-align: center; padding: 80px 20px; margin-top: 40px;
+            background-color: var(--color-texto-claro); border-radius: 8px;
+            box-shadow: var(--sombra-caja);
+        }
+        #portada h1 { color: var(--color-primario); margin-bottom: 1rem; }
+        #portada p { margin-bottom: 2rem; font-size: 1.1rem; }
+
+        .btn {
+            display: inline-block; padding: 12px 25px; background-color: var(--color-secundario);
+            color: var(--color-texto-claro); border: none; border-radius: 5px;
+            cursor: pointer; text-decoration: none; font-size: 1rem;
+            transition: background-color 0.3s; font-weight: bold;
+        }
+        .btn:hover, .btn:focus {
+            background-color: var(--color-primario); outline: 2px solid var(--color-acento);
+        }
+
+        #selector-modulos { margin-top: 60px; }
+        #selector-modulos h2 { text-align: center; margin-bottom: 2rem; color: var(--color-primario); }
+        .grid-modulos { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .tarjeta-modulo {
+            background-color: var(--color-texto-claro); padding: 20px; border-radius: 8px;
+            box-shadow: var(--sombra-caja); text-align: center; border-left: 5px solid var(--color-secundario);
+        }
+        .tarjeta-modulo.completado { border-left-color: var(--color-correcto); }
+        .tarjeta-modulo h3 { color: var(--color-secundario); margin-bottom: 10px; }
+
+        #vista-modulo { margin-top: 60px; }
+        .tarjeta-contenido {
+            background-color: var(--color-texto-claro); padding: 25px;
+            border-radius: 8px; margin-bottom: 20px; box-shadow: var(--sombra-caja);
+        }
+        .tarjeta-contenido h2, .tarjeta-contenido h3 {
+            color: var(--color-primario); margin-bottom: 1rem;
+            border-bottom: 2px solid var(--color-acento); padding-bottom: 0.5rem;
+        }
+        .resumen-parrafo { transition: background-color 0.5s; padding: 5px; border-radius: 4px; }
+
+        .acordeon-titulo {
+            background-color: var(--color-secundario); color: var(--color-texto-claro); cursor: pointer;
+            padding: 15px; width: 100%; border: none; text-align: left; outline: none;
+            font-size: 1.1rem; transition: 0.4s; border-radius: 5px; margin-top: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .acordeon-titulo::after { content: '+'; font-size: 1.5rem; font-weight: bold; }
+        .acordeon-titulo.activo::after { content: '−'; }
+        .panel-acordeon {
+            padding: 0 18px; background-color: white; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease-out; border-bottom: 1px solid #ddd;
+        }
+        .panel-acordeon p { padding: 15px 0; }
+
+        .pregunta-quiz {
+            margin-bottom: 25px; padding: 15px; border-left: 3px solid var(--color-secundario);
+            background-color: #fdfdfd;
+        }
+        .opciones-quiz label {
+            display: block; margin: 5px 0; padding: 10px; border-radius: 5px;
+            cursor: pointer; background-color: #eee;
+        }
+        .opciones-quiz input { margin-right: 10px; }
+        .feedback {
+            margin-top: 10px; padding: 10px; border-radius: 5px; font-weight: bold; display: none;
+        }
+        .feedback.correcto {
+            background-color: #e8f5e9; color: var(--color-correcto);
+            border-left: 4px solid var(--color-correcto);
+        }
+        .feedback.incorrecto {
+            background-color: #ffebee; color: var(--color-incorrecto);
+            border-left: 4px solid var(--color-incorrecto);
+        }
+        .btn-reforzar {
+            margin-top: 10px; padding: 5px 10px; font-size: 0.8rem;
+            background-color: var(--color-acento); color: var(--color-texto);
+            border: none; border-radius: 3px; cursor: pointer;
+        }
+
+        /* Estilos Drag and Drop */
+        .contenedor-drag-drop { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; }
+        .columna-arrastrables, .columna-destinos { flex: 1; min-width: 250px; }
+        .arrastrable {
+            padding: 10px; background-color: #e3f2fd; border: 1px solid var(--color-secundario);
+            margin-bottom: 10px; border-radius: 5px; cursor: grab;
+        }
+        .arrastrable.arrastrando { opacity: 0.5; }
+        .zona-destino {
+            padding: 10px; background-color: #fafafa; border: 2px dashed #ccc;
+            margin-bottom: 10px; border-radius: 5px; min-height: 50px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .zona-destino.sobre { border-color: var(--color-acento); background-color: #fffde7; }
+        .zona-destino.correcta { border-color: var(--color-correcto); background-color: #e8f5e9; }
+        .zona-destino.incorrecta { border-color: var(--color-incorrecto); background-color: #ffebee; }
+        .zona-destino p { font-style: italic; color: #757575; }
+
+        .modal {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-contenido {
+            background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888;
+            width: 80%; max-width: 500px; text-align: center; border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .cerrar-modal {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        #navegacion-botones { margin-top: 2rem; display: flex; justify-content: space-between; }
+
+        @media (min-width: 768px) {
+            .grid-modulos { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="barra-progreso-fija">
+        <div id="barra-progreso"></div>
+        <div id="progreso-texto">Progreso: 0%</div>
+    </header>
+
+    <main class="contenedor">
+        <section id="portada">
+            <h1>Sociedad Colonial en América y Chile</h1>
+            <p>Un curso interactivo para 8° Básico</p>
+            <button id="btn-iniciar" class="btn" aria-label="Iniciar curso">Iniciar Curso</button>
+        </section>
+
+        <section id="selector-modulos" style="display: none;">
+            <h2>Selecciona un Módulo</h2>
+            <div class="grid-modulos"></div>
+        </section>
+
+        <section id="vista-modulo" style="display: none;"></section>
+        
+        <div id="modal-resultados" class="modal">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" role="button" aria-label="Cerrar">&times;</span>
+                <h2 id="modal-titulo">Resultados</h2>
+                <p id="modal-puntaje"></p>
+                <p id="modal-mensaje"></p>
+                <button id="btn-volver-modulos" class="btn">Volver a Módulos</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+    const datosCurso = {
+        modulos: [
+            {
+                id: 1,
+                titulo: "Formación de la sociedad colonial",
+                resumen: [
+                    { id: "r1-1", texto: "Tras la llegada de los europeos, la conquista de América fue un proceso complejo facilitado por la propagación de enfermedades y la superioridad técnica de las armas. La Corona española, para organizar sus nuevos dominios, estableció un sistema político y administrativo centralizado. Se crearon virreinatos y gobernaciones para ejercer control directo desde España, imponiendo sus leyes e instituciones. La Iglesia Católica jugó un rol fundamental en este proceso, no solo evangelizando, sino también influyendo en la vida social y cultural, actuando como un pilar del nuevo orden." },
+                    { id: "r1-2", texto: "La economía se estructuró en torno a la explotación de recursos, principalmente a través de la encomienda. Este sistema obligaba a los indígenas a trabajar para un encomendero español a cambio de protección y evangelización, aunque en la práctica derivó en una forma de trabajo forzado. Este contacto constante y a menudo violento, junto con la llegada de población africana esclavizada, dio origen a un intenso proceso de mestizaje. De esta mezcla surgió una sociedad de castas, un sistema jerárquico que clasificaba a las personas según su origen étnico, determinando sus derechos y lugar en la sociedad." }
+                ],
+                glosario: [
+                    { termino: "Encomienda", definicion: "Sistema en que la Corona española concedía a un súbdito (encomendero) un número de indígenas para que trabajaran para él a cambio de protección y evangelización." },
+                    { termino: "Mestizaje", definicion: "Proceso de mezcla biológica y cultural entre distintos grupos étnicos, como españoles, indígenas y africanos, que dio origen a nuevas castas." },
+                    { termino: "Cabildo", definicion: "Institución municipal en las colonias españolas, similar a un ayuntamiento. Representaba a los vecinos y se encargaba del gobierno de la ciudad." },
+                    { termino: "Corona española", definicion: "Se refiere al poder del rey y la monarquía de España, que gobernaba sobre el imperio, incluyendo las colonias en América." },
+                    { termino: "Casta", definicion: "Grupo social estático y jerárquico al que se pertenecía por nacimiento, basado en el origen étnico. Determinaba el estatus social y los derechos de una persona." }
+                ],
+                dragDrop: {
+                    titulo: "Relaciona los Conceptos",
+                    conceptos: [
+                        { id: "dd1-1", texto: "Encomienda" },
+                        { id: "dd1-2", texto: "Mestizaje" },
+                        { id: "dd1-3", texto: "Cabildo" },
+                        { id: "dd1-4", texto: "Sociedad de Castas" }
+                    ],
+                    relaciones: [
+                        { id: "dd1-1", texto: "Sistema de trabajo indígena." },
+                        { id: "dd1-2", texto: "Mezcla biológica y cultural." },
+                        { id: "dd1-3", texto: "Gobierno de la ciudad." },
+                        { id: "dd1-4", texto: "Jerarquía por origen étnico." }
+                    ]
+                },
+                quiz: [
+                    { pregunta: "¿Cuál fue el principal sistema de trabajo indígena impuesto por los españoles al inicio de la colonia?", tipo: "multiple", opciones: ["Mita", "Esclavitud", "Encomienda"], respuesta: "Encomienda", feedback: "La encomienda fue el sistema inicial donde se asignaban indígenas a un español para trabajar a cambio de su evangelización.", refuerzoId: "r1-2" },
+                    { pregunta: "El mestizaje fue un proceso que involucró únicamente a españoles e indígenas.", tipo: "vf", respuesta: "falso", feedback: "Falso. El mestizaje fue un proceso más complejo que incluyó a españoles, indígenas y también a la población africana traída como esclava.", refuerzoId: "r1-2" },
+                    { pregunta: "La institución colonial encargada del gobierno de una ciudad era el:", tipo: "multiple", opciones: ["Virreinato", "Cabildo", "Real Audiencia"], respuesta: "Cabildo", feedback: "El Cabildo era el organismo que representaba a los vecinos y administraba los asuntos locales de la ciudad.", refuerzoId: "r1-1" },
+                    { pregunta: "La Corona Española estableció un control centralizado en América a través de Virreinatos y Gobernaciones.", tipo: "vf", respuesta: "verdadero", feedback: "Verdadero. Para administrar los extensos territorios, la Corona implementó un sistema jerárquico con virreyes y gobernadores.", refuerzoId: "r1-1" },
+                    { pregunta: "¿Qué rol jugó la Iglesia Católica en la colonización?", tipo: "multiple", opciones: ["Únicamente económico", "Político y social", "Solo cultural"], respuesta: "Político y social", feedback: "La Iglesia fue un pilar del orden colonial, influyendo en la política, la sociedad y la cultura a través de la evangelización y sus instituciones.", refuerzoId: "r1-1" },
+                    { pregunta: "La 'sociedad de castas' se basaba en el mérito y el esfuerzo personal.", tipo: "vf", respuesta: "falso", feedback: "Falso. La sociedad de castas era un sistema rígido basado en el origen étnico de nacimiento, no en el mérito.", refuerzoId: "r1-2" },
+                    { pregunta: "Una de las principales causas de la rápida conquista fue:", tipo: "multiple", opciones: ["La alianza voluntaria de todos los pueblos indígenas", "La superioridad numérica de los ejércitos españoles", "La propagación de enfermedades europeas"], respuesta: "La propagación de enfermedades europeas", feedback: "Las enfermedades como la viruela diezmaron a la población indígena, que no tenía defensas, facilitando la conquista.", refuerzoId: "r1-1" },
+                    { pregunta: "El objetivo principal de la encomienda, en teoría, era:", tipo: "multiple", opciones: ["La evangelización y protección del indígena", "La esclavización formal del indígena", "El enriquecimiento rápido del encomendero"], respuesta: "La evangelización y protección del indígena", feedback: "Aunque en la práctica fue una forma de explotación, la justificación teórica de la encomienda era la protección y cristianización de los nativos.", refuerzoId: "r1-2" },
+                    { pregunta: "Los virreinatos fueron creados para:", tipo: "multiple", opciones: ["Fomentar el autogobierno indígena", "Ejercer el control directo de la Corona en vastos territorios", "Limitar el poder de la Iglesia"], respuesta: "Ejercer el control directo de la Corona en vastos territorios", feedback: "Los virreinatos eran las unidades administrativas más grandes, gobernadas por un virrey que representaba directamente al rey.", refuerzoId: "r1-1" },
+                    { pregunta: "La llegada de población africana no tuvo impacto en el proceso de mestizaje.", tipo: "vf", respuesta: "falso", feedback: "Falso. La población africana fue el tercer componente clave en el mestizaje, dando lugar a castas como mulatos y zambos.", refuerzoId: "r1-2" }
+                ]
+            },
+            {
+                id: 2,
+                titulo: "Sociedad colonial en Chile",
+                resumen: [
+                    { id: "r2-1", texto: "La sociedad colonial en Chile se organizó de forma jerárquica. En la cima estaban los peninsulares (españoles) y los criollos (descendientes de españoles nacidos en América). Más abajo se encontraban los mestizos, que fueron el grupo más numeroso, seguidos por los indígenas, quienes vivían en sus comunidades o trabajaban en las haciendas. En la base de la pirámide social estaban los afrodescendientes, principalmente esclavos. La vida cotidiana se dividía entre el mundo urbano, centrado en ciudades como Santiago y Concepción donde residía la elite y se concentraba la administración, y el mundo rural, dominado por la hacienda." },
+                    { id: "r2-2", texto: "La hacienda fue la unidad económica más importante, funcionando como un centro productivo agrícola y ganadero casi autosuficiente. La minería, especialmente de cobre y plata en el norte, también fue una actividad económica relevante, aunque secundaria a la agricultura. El comercio estaba estrictamente controlado por el monopolio español. Hacia finales del período colonial, esta rígida estructura social y económica comenzó a mostrar tensiones. El creciente poder económico de los criollos y su descontento por la exclusión de los altos cargos políticos generaron un malestar que sería clave para el futuro proceso de independencia." }
+                ],
+                glosario: [
+                    { termino: "Criollos", definicion: "Descendientes de españoles nacidos en América. Poseían poder económico pero tenían acceso limitado a los altos cargos políticos." },
+                    { termino: "Peninsulares", definicion: "Españoles nacidos en la Península Ibérica (España) que ocupaban los cargos más altos en la administración colonial." },
+                    { termino: "Hacienda", definicion: "Gran propiedad rural que fue el núcleo de la economía y la vida social en el Chile colonial. Se dedicaba a la agricultura y ganadería." },
+                    { termino: "Real Audiencia", definicion: "El más alto tribunal de justicia en las colonias. Tenía también funciones gubernativas en ausencia del gobernador." },
+                    { termino: "Mestizos", definicion: "Personas descendientes de la unión entre españoles e indígenas. Formaron el grupo más grande de la sociedad colonial." }
+                ],
+                dragDrop: {
+                    titulo: "Relaciona los Actores Sociales",
+                    conceptos: [
+                        { id: "dd2-1", texto: "Criollo" },
+                        { id: "dd2-2", texto: "Hacienda" },
+                        { id: "dd2-3", texto: "Peninsular" },
+                        { id: "dd2-4", texto: "Mestizo" }
+                    ],
+                    relaciones: [
+                        { id: "dd2-1", texto: "Descendiente de español nacido en América." },
+                        { id: "dd2-2", texto: "Principal unidad económica rural." },
+                        { id: "dd2-3", texto: "Español con el máximo poder político." },
+                        { id: "dd2-4", texto: "Grupo más numeroso de la sociedad." }
+                    ]
+                },
+                quiz: [
+                    { pregunta: "El grupo social con mayor poder político en la colonia, nacido en España, era el de los:", tipo: "multiple", opciones: ["Criollos", "Mestizos", "Peninsulares"], respuesta: "Peninsulares", feedback: "Los peninsulares, por haber nacido en España, ocupaban los cargos más importantes del gobierno colonial.", refuerzoId: "r2-1" },
+                    { pregunta: "La principal actividad económica del Chile colonial fue la minería de oro.", tipo: "vf", respuesta: "falso", feedback: "Falso. La principal unidad económica fue la hacienda, centrada en la agricultura y la ganadería. La minería era secundaria.", refuerzoId: "r2-2" },
+                    { pregunta: "Los criollos estaban descontentos principalmente por:", tipo: "multiple", opciones: ["Los altos impuestos a la tierra.", "Su exclusión de los altos cargos políticos.", "La falta de mano de obra indígena."], respuesta: "Su exclusión de los altos cargos políticos.", feedback: "A pesar de su poder económico, los criollos no podían acceder a los cargos más altos, reservados para los peninsulares, lo que generó gran tensión.", refuerzoId: "r2-2" },
+                    { pregunta: "La vida rural en el Chile colonial giraba en torno a:", tipo: "multiple", opciones: ["La minería", "El comercio portuario", "La hacienda"], respuesta: "La hacienda", feedback: "La hacienda era el centro de la vida rural, funcionando como una unidad productiva y social casi autónoma.", refuerzoId: "r2-1" },
+                    { pregunta: "El grupo social más numeroso en la sociedad colonial chilena era el de los indígenas.", tipo: "vf", respuesta: "falso", feedback: "Falso. Aunque la población indígena era importante, el grupo más numeroso lo constituían los mestizos.", refuerzoId: "r2-1" },
+                    { pregunta: "El comercio en Chile colonial era libre y abierto a todas las naciones.", tipo: "vf", respuesta: "falso", feedback: "Falso. El comercio estaba rígidamente controlado por el monopolio comercial de la Corona española.", refuerzoId: "r2-2" },
+                    { pregunta: "¿Quiénes se encontraban en la base de la pirámide social en Chile colonial?", tipo: "multiple", opciones: ["Mestizos", "Indígenas", "Afrodescendientes"], respuesta: "Afrodescendientes", feedback: "Los afrodescendientes, en su mayoría esclavos, ocupaban el escalón más bajo de la estructura social.", refuerzoId: "r2-1" },
+                    { pregunta: "Una de las principales tensiones a fines de la colonia fue el conflicto entre peninsulares y criollos.", tipo: "vf", respuesta: "verdadero", feedback: "Verdadero. La rivalidad entre criollos, con poder económico, y peninsulares, con poder político, fue una causa fundamental de la futura independencia.", refuerzoId: "r2-2" },
+                    { pregunta: "Las ciudades coloniales como Santiago eran principalmente centros de:", tipo: "multiple", opciones: ["Actividad agrícola", "Administración y residencia de la elite", "Resistencia indígena"], respuesta: "Administración y residencia de la elite", feedback: "Las ciudades eran el corazón administrativo y político de la colonia, donde vivían los grupos de mayor poder.", refuerzoId: "r2-1" },
+                    { pregunta: "La hacienda era una unidad económica que dependía completamente del comercio exterior.", tipo: "vf", respuesta: "falso", feedback: "Falso. La hacienda se caracterizaba por ser casi autosuficiente, produciendo la mayor parte de lo que necesitaba.", refuerzoId: "r2-2" }
+                ]
+            }
+        ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const portada = document.getElementById('portada');
+        const selectorModulos = document.getElementById('selector-modulos');
+        const vistaModulo = document.getElementById('vista-modulo');
+        const btnIniciar = document.getElementById('btn-iniciar');
+        const modalResultados = document.getElementById('modal-resultados');
+        const cerrarModalBtn = document.querySelector('.cerrar-modal');
+        const btnVolverModulos = document.getElementById('btn-volver-modulos');
+
+        let estado = { progreso: [], respuestas: {} };
+
+        function cargarProgreso() {
+            const guardado = localStorage.getItem('progresoCursoHistoria');
+            if (guardado) estado = JSON.parse(guardado);
+            actualizarBarraProgreso();
+        }
+
+        function guardarProgreso() {
+            localStorage.setItem('progresoCursoHistoria', JSON.stringify(estado));
+        }
+
+        function actualizarBarraProgreso() {
+            const porcentaje = (estado.progreso.length / datosCurso.modulos.length) * 100;
+            document.getElementById('barra-progreso').style.width = `${porcentaje}%`;
+            document.getElementById('progreso-texto').textContent = `Progreso: ${Math.round(porcentaje)}%`;
+        }
+
+        function mostrarSelector() {
+            portada.style.display = 'none';
+            vistaModulo.style.display = 'none';
+            selectorModulos.style.display = 'block';
+            const gridModulos = selectorModulos.querySelector('.grid-modulos');
+            gridModulos.innerHTML = '';
+            datosCurso.modulos.forEach(modulo => {
+                const completado = estado.progreso.includes(modulo.id);
+                gridModulos.innerHTML += `
+                    <div class="tarjeta-modulo ${completado ? 'completado' : ''}">
+                        <h3>Módulo ${modulo.id}: ${modulo.titulo}</h3>
+                        <p>${completado ? "Completado ✔" : "Pendiente"}</p>
+                        <button class="btn btn-ver-modulo" data-id="${modulo.id}">Ver Módulo</button>
+                    </div>`;
+            });
+        }
+
+        function renderizarModulo(id) {
+            const modulo = datosCurso.modulos.find(m => m.id === id);
+            if (!modulo) return;
+
+            selectorModulos.style.display = 'none';
+            vistaModulo.style.display = 'block';
+            
+            const resumenHtml = modulo.resumen.map(p => `<p id="${p.id}" class="resumen-parrafo">${p.texto}</p>`).join('');
+            const glosarioHtml = modulo.glosario.map(item => `
+                <button class="acordeon-titulo" aria-expanded="false">${item.termino}</button>
+                <div class="panel-acordeon"><p>${item.definicion}</p></div>`).join('');
+            
+            const conceptosDrag = modulo.dragDrop.conceptos.map(c => `<div class="arrastrable" id="${c.id}" draggable="true">${c.texto}</div>`).join('');
+            const relacionesDrop = modulo.dragDrop.relaciones.map(r => `<div class="zona-destino" data-acepta="${r.id}"><p>${r.texto}</p></div>`).join('');
+            const dragDropHtml = `
+                <div class="contenedor-drag-drop">
+                    <div class="columna-arrastrables"><h4>Conceptos</h4>${conceptosDrag}</div>
+                    <div class="columna-destinos"><h4>Relaciones</h4>${relacionesDrop}</div>
+                </div>`;
+
+            const quizHtml = modulo.quiz.map((q, i) => {
+                const opciones = q.tipo === 'multiple' 
+                    ? q.opciones.map(op => `<label><input type="radio" name="pregunta-${i}" value="${op}"> ${op}</label>`).join('')
+                    : `<label><input type="radio" name="pregunta-${i}" value="verdadero"> Verdadero</label>
+                       <label><input type="radio" name="pregunta-${i}" value="falso"> Falso</label>`;
+                return `
+                    <div class="pregunta-quiz" id="pregunta-cont-${i}">
+                        <p><strong>${i + 1}. ${q.pregunta}</strong></p>
+                        <div class="opciones-quiz">${opciones}</div>
+                        <button class="btn-reforzar" data-ref-id="${q.refuerzoId}" aria-label="Reforzar">Reforzar</button>
+                        <div class="feedback" id="feedback-${i}"></div>
+                    </div>`;
+            }).join('');
+
+            vistaModulo.innerHTML = `
+                <div class="tarjeta-contenido"><h2>Módulo ${modulo.id}: ${modulo.titulo}</h2><div id="resumen-modulo">${resumenHtml}</div></div>
+                <div class="tarjeta-contenido"><h3>Glosario Interactivo</h3>${glosarioHtml}</div>
+                <div class="tarjeta-contenido"><h3>Actividad: ${modulo.dragDrop.titulo}</h3>${dragDropHtml}</div>
+                <div class="tarjeta-contenido"><h3>Autoevaluación</h3><form id="quiz-form" data-id="${modulo.id}">${quizHtml}<button type="submit" class="btn">Calificar</button></form></div>
+                <div id="navegacion-botones"><button id="btn-regresar" class="btn">Volver a Módulos</button></div>`;
+            
+            if (estado.respuestas[id]) {
+                modulo.quiz.forEach((q, i) => {
+                    const resp = estado.respuestas[id][i];
+                    if (resp) {
+                        const input = vistaModulo.querySelector(`input[name="pregunta-${i}"][value="${resp}"]`);
+                        if (input) input.checked = true;
+                    }
+                });
+            }
+            
+            iniciarDragDrop();
+        }
+
+        function calificarQuiz(form) {
+            const moduloId = parseInt(form.dataset.id);
+            const modulo = datosCurso.modulos.find(m => m.id === moduloId);
+            let correctas = 0;
+            if (!estado.respuestas[moduloId]) estado.respuestas[moduloId] = {};
+
+            modulo.quiz.forEach((q, i) => {
+                const respUsuario = new FormData(form).get(`pregunta-${i}`);
+                const feedbackEl = document.getElementById(`feedback-${i}`);
+                estado.respuestas[moduloId][i] = respUsuario;
+                const esCorrecta = respUsuario && respUsuario.toLowerCase() === q.respuesta.toLowerCase();
+                if (esCorrecta) correctas++;
+                feedbackEl.textContent = `${esCorrecta ? '¡Correcto!' : 'Incorrecto.'} ${q.feedback}`;
+                feedbackEl.className = `feedback ${esCorrecta ? 'correcto' : 'incorrecto'}`;
+                feedbackEl.style.display = 'block';
+            });
+            
+            if (correctas / modulo.quiz.length > 0.7) { // Umbral de aprobación 70%
+                if (!estado.progreso.includes(moduloId)) estado.progreso.push(moduloId);
+            }
+            guardarProgreso();
+            actualizarBarraProgreso();
+            mostrarModalResultados(correctas, modulo.quiz.length);
+        }
+
+        function mostrarModalResultados(correctas, total) {
+            document.getElementById('modal-puntaje').textContent = `Obtuviste ${correctas} de ${total} correctas.`;
+            let mensaje = "Sigue estudiando para mejorar.";
+            if (correctas / total > 0.7) mensaje = "¡Buen trabajo! Has aprobado este módulo.";
+            if (correctas === total) mensaje = "¡Excelente! Has dominado este módulo.";
+            document.getElementById('modal-mensaje').textContent = mensaje;
+            modalResultados.style.display = 'block';
+        }
+        
+        function iniciarDragDrop() {
+            const arrastrables = document.querySelectorAll('.arrastrable');
+            const destinos = document.querySelectorAll('.zona-destino');
+
+            arrastrables.forEach(arrastrable => {
+                arrastrable.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                    setTimeout(() => e.target.classList.add('arrastrando'), 0);
+                });
+                arrastrable.addEventListener('dragend', e => e.target.classList.remove('arrastrando'));
+            });
+
+            destinos.forEach(zona => {
+                zona.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zona.classList.add('sobre');
+                });
+                zona.addEventListener('dragleave', () => zona.classList.remove('sobre'));
+                zona.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zona.classList.remove('sobre');
+                    const id = e.dataTransfer.getData('text');
+                    const arrastrable = document.getElementById(id);
+                    if (zona.dataset.acepta === id) {
+                        zona.innerHTML = '';
+                        zona.appendChild(arrastrable);
+                        zona.classList.add('correcta');
+                        arrastrable.setAttribute('draggable', 'false');
+                        arrastrable.style.cursor = 'default';
+                    } else {
+                        zona.classList.add('incorrecta');
+                        setTimeout(() => zona.classList.remove('incorrecta'), 500);
+                    }
+                });
+            });
+        }
+
+        btnIniciar.addEventListener('click', mostrarSelector);
+        selectorModulos.addEventListener('click', e => {
+            if (e.target.classList.contains('btn-ver-modulo')) renderizarModulo(parseInt(e.target.dataset.id));
+        });
+        vistaModulo.addEventListener('click', e => {
+            if (e.target.id === 'btn-regresar') mostrarSelector();
+            if (e.target.classList.contains('acordeon-titulo')) {
+                e.target.classList.toggle('activo');
+                const panel = e.target.nextElementSibling;
+                panel.style.maxHeight = panel.style.maxHeight ? null : panel.scrollHeight + "px";
+            }
+            if (e.target.classList.contains('btn-reforzar')) {
+                const parrafo = document.getElementById(e.target.dataset.refId);
+                if (parrafo) {
+                    parrafo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    parrafo.style.backgroundColor = 'var(--color-acento)';
+                    setTimeout(() => parrafo.style.backgroundColor = '', 2000);
+                }
+            }
+        });
+        vistaModulo.addEventListener('submit', e => {
+            if (e.target.id === 'quiz-form') {
+                e.preventDefault();
+                calificarQuiz(e.target);
+            }
+        });
+
+        cerrarModalBtn.addEventListener('click', () => modalResultados.style.display = 'none');
+        btnVolverModulos.addEventListener('click', () => {
+            modalResultados.style.display = 'none';
+            mostrarSelector();
+        });
+        window.addEventListener('click', e => {
+            if (e.target == modalResultados) modalResultados.style.display = 'none';
+        });
+
+        cargarProgreso();
+    });
+    </script>
+</body>
+</html>
